@@ -1,23 +1,37 @@
 <script setup lang="ts">
 import type { Todo } from '@/views/TodosView.vue';
 import { Icon } from "@iconify/vue";
+import { ref } from 'vue';
 
 const props = defineProps<{
   todo: Todo
 }>()
+const emit = defineEmits(["toggle-complete", "edit-todo", "done-edit-todo", "delete-todo"])
+const newTodo = ref(props.todo.todo)
+
+const toggleComplete = () => {
+  emit("toggle-complete", props.todo.id)
+}
+const editTodo = () => {
+  emit("edit-todo", props.todo.id)
+}
+const doneEditTodo = () => {
+  if (newTodo.value !== props.todo.todo) emit("done-edit-todo", props.todo.id, newTodo.value)
+}
+const deleteTodo = () => emit("delete-todo", props.todo.id)
 </script>
 
 <template>
   <li>
-    <input type="checkbox" :checked="!!todo.isCompleted">
+    <input type="checkbox" :checked="!!todo.isCompleted" @change="toggleComplete()">
     <div class="todo">
-      <input type="text" :value="todo.todo">
-      <span>{{ todo.todo }}</span>
+      <input v-if="todo.isEditing" type="text" v-model="newTodo">
+      <span v-else>{{ todo.todo }}</span>
     </div>
-    <div class="todo-action">
-      <Icon icon="ph:check-circle" class="icon" color="#41b080" width="22"/>
-      <Icon icon="ph:pencil-fill" class="icon" color="#41b080" width="22"/>
-      <Icon icon="ph:trash" class="icon" color="#f95e5e" width="22"/>
+    <div class="todo-actions">
+      <Icon v-if="todo.isEditing" icon="ph:check-circle" class="icon" color="#41b080" width="22" @click="doneEditTodo()"/>
+      <Icon v-else icon="ph:pencil-fill" class="icon" color="#41b080" width="22" @click="editTodo()"/>
+      <Icon icon="ph:trash" class="icon" color="#f95e5e" width="22" @click="deleteTodo()"/>
     </div>
   </li>
 </template>

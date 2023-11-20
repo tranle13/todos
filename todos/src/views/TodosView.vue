@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TodoCreator from '@/components/TodoCreator.vue';
 import TodoItem from '@/components/TodoItem.vue';
+import { Icon } from "@iconify/vue";
 import { uid } from 'uid';
 import { ref } from 'vue';
 
@@ -20,15 +21,42 @@ const createTodo = (todo: string) => {
     isEditing: null
   })
 }
+const editTodo = (id: string) => {
+  todoList.value.map(todo => {
+    if (todo.id === id) todo.isEditing = todo.isEditing ? null : true;
+    return todo;
+  })
+}
+const toggleComplete = (id: string) => {
+  todoList.value.map(todo => {
+    if (todo.id === id) todo.isCompleted = todo.isCompleted ? null : true
+    return todo;
+  })
+}
+const doneEditTodo = (id: string, newTodo: string) => {
+  todoList.value.map(todo => {
+    if (todo.id === id) {
+      todo.todo = newTodo;
+      todo.isEditing = null;
+    }
+    return todo;
+  })
+}
+const deleteTodo = (id: string) => {
+  todoList.value = todoList.value.filter(todo => todo.id !== id)}
 </script>
 
 <template>
   <main>
     <h1>Create Todo</h1>
     <TodoCreator @create-todo="createTodo"/>
-    <ul class="todo-list">
-      <TodoItem v-for="todo in todoList" :key="todo.id" :todo="todo"/>
+    <ul v-if="todoList.length > 0" class="todo-list">
+      <TodoItem v-for="todo in todoList" :key="todo.id" :todo="todo" @edit-todo="editTodo" @toggle-complete="toggleComplete" @done-edit-todo="doneEditTodo" @delete-todo="deleteTodo"/>
     </ul>
+    <p v-else class="todos-msg">
+      <Icon icon="noto-v1:sad-but-relieved-face" width="22"/>
+      <span>You have no todo's to complete! Add one!</span>
+    </p>
   </main>
 </template>
 
