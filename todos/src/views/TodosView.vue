@@ -13,25 +13,45 @@ export interface Todo {
 }
 
 const todoList = ref<Todo[]>([])
+
+const fetchTodoList = () => {
+  const savedTodoList = localStorage.getItem('todoList')
+  if (savedTodoList) {
+    todoList.value = JSON.parse(savedTodoList) as Todo[]
+  }
+}
+
+fetchTodoList()
+
+const setTodoListLocalStorage = () => {
+  localStorage.setItem('todoList', JSON.stringify(todoList.value))
+}
 const createTodo = (todo: string) => {
+  console.log(typeof todoList.value)
+
   todoList.value.push({
     id: uid(),
     todo,
     isCompleted: false,
     isEditing: false
   })
+  setTodoListLocalStorage()
 }
 const toggleEditTodo = (index: number) => {
   todoList.value[index].isEditing = !todoList.value[index].isEditing
+  setTodoListLocalStorage()
 }
 const toggleTodoComplete = (index: number) => {
   todoList.value[index].isCompleted = !todoList.value[index].isCompleted
+  setTodoListLocalStorage()
 }
 const updateTodo = (newTodo: string, index: number) => {
   todoList.value[index].todo = newTodo
+  setTodoListLocalStorage()
 }
 const deleteTodo = (id: string) => {
   todoList.value = todoList.value.filter((todo) => todo.id !== id)
+  setTodoListLocalStorage()
 }
 </script>
 
@@ -45,8 +65,8 @@ const deleteTodo = (id: string) => {
         :key="todo.id"
         :todo="todo"
         :index="index"
-        @edit-todo="toggleEditTodo"
         @toggle-complete="toggleTodoComplete"
+        @edit-todo="toggleEditTodo"
         @update-todo="updateTodo"
         @delete-todo="deleteTodo"
       />
