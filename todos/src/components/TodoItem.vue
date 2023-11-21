@@ -1,37 +1,54 @@
 <script setup lang="ts">
-import type { Todo } from '@/views/TodosView.vue';
-import { Icon } from "@iconify/vue";
-import { ref } from 'vue';
+import type { Todo } from '@/views/TodosView.vue'
+import { Icon } from '@iconify/vue'
 
 const props = defineProps<{
   todo: Todo
+  index: number
 }>()
-const emit = defineEmits(["toggle-complete", "edit-todo", "done-edit-todo", "delete-todo"])
-const newTodo = ref(props.todo.todo)
+const emit = defineEmits(['toggle-complete', 'edit-todo', 'update-todo', 'delete-todo'])
 
-const toggleComplete = () => {
-  emit("toggle-complete", props.todo.id)
+const updateTodo = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  if (target) emit('update-todo', target.value, props.index)
 }
-const editTodo = () => {
-  emit("edit-todo", props.todo.id)
-}
-const doneEditTodo = () => {
-  if (newTodo.value !== props.todo.todo) emit("done-edit-todo", props.todo.id, newTodo.value)
-}
-const deleteTodo = () => emit("delete-todo", props.todo.id)
 </script>
 
 <template>
   <li>
-    <input type="checkbox" :checked="!!todo.isCompleted" @change="toggleComplete()">
+    <input
+      type="checkbox"
+      :checked="!!todo.isCompleted"
+      @change="$emit('toggle-complete', props.index)"
+    />
     <div class="todo">
-      <input v-if="todo.isEditing" type="text" v-model="newTodo">
-      <span v-else>{{ todo.todo }}</span>
+      <input v-if="todo.isEditing" type="text" :value="todo.todo" @input="updateTodo" />
+      <span v-else :class="{ 'completed-todo': todo.isCompleted }">{{ todo.todo }}</span>
     </div>
     <div class="todo-actions">
-      <Icon v-if="todo.isEditing" icon="ph:check-circle" class="icon" color="#41b080" width="22" @click="doneEditTodo()"/>
-      <Icon v-else icon="ph:pencil-fill" class="icon" color="#41b080" width="22" @click="editTodo()"/>
-      <Icon icon="ph:trash" class="icon" color="#f95e5e" width="22" @click="deleteTodo()"/>
+      <Icon
+        v-if="todo.isEditing"
+        icon="ph:check-circle"
+        class="icon"
+        color="#41b080"
+        width="22"
+        @click="$emit('edit-todo', index)"
+      />
+      <Icon
+        v-else
+        icon="ph:pencil-fill"
+        class="icon"
+        color="#41b080"
+        width="22"
+        @click="$emit('edit-todo', index)"
+      />
+      <Icon
+        icon="ph:trash"
+        class="icon"
+        color="#f95e5e"
+        width="22"
+        @click="$emit('delete-todo', todo.id)"
+      />
     </div>
   </li>
 </template>
@@ -43,7 +60,8 @@ li {
   gap: 10px;
   padding: 16px 10px;
   background-color: #f1f1f1;
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
     0 8px 10px -6px rgb(0 0 0 / 0.1);
 
   &:hover {
@@ -52,13 +70,15 @@ li {
     }
   }
 
-  input[type="checkbox"] {
+  input[type='checkbox'] {
     appearance: none;
     width: 20px;
     height: 20px;
     background-color: #fff;
     border-radius: 50%;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1);
 
     &:checked {
       background-color: #41b080;
@@ -68,7 +88,11 @@ li {
   .todo {
     flex: 1;
 
-    input[type="text"] {
+    .completed-todo {
+      text-decoration: line-through;
+    }
+
+    input[type='text'] {
       width: 100%;
       padding: 2px 6px;
       border: 2px solid #41b080;
@@ -80,6 +104,7 @@ li {
     gap: 6px;
     opacity: 0;
     transition: 150ms ease-in-out;
+
     .icon {
       cursor: pointer;
     }
